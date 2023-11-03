@@ -122,3 +122,79 @@ const myChart2 = new Chart(ctx2, {
   },
 });
 
+// Graphique dynamique
+
+// Créez un tableau vide pour stocker les données du graphique
+let dataPoints = [];
+
+// Créez un élément canvas dynamiquement
+const canvas3 = document.createElement('canvas');
+canvas3.id = 'myChart3';
+
+// Obtenez le contexte du graphique
+const ctx3 = canvas3.getContext('2d');
+
+// Créez un objet de configuration du graphique
+const chartConfig = {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Data Series',
+      data: dataPoints,
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1,
+    }],
+  },
+  options: {
+    scales: {
+      x: {
+        type: 'linear',
+        position: 'bottom',
+        title: {
+          display: true,
+          text: 'X-Axis',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Y-Axis',
+        },
+      },
+    },
+  },
+};
+
+// Créez le graphique en utilisant la configuration
+const myChart3 = new Chart(ctx3, chartConfig);
+
+// Fonction pour mettre à jour le graphique
+function updateChart() {
+  const xstart = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].x + 1 : 1;
+  const ystart = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].y : 0;
+
+  fetch(`https://canvasjs.com/services/data/datapoints.php?xstart=${xstart}&ystart=${ystart}`)
+    .then((response) => response.json())
+    .then((data) => {
+      dataPoints.push({
+        x: xstart,
+        y: data[0][1],
+      });
+
+      // Rafraîchissez le graphique
+      myChart3.update();
+
+      // Répétez la mise à jour toutes les secondes
+      setTimeout(updateChart, 1000);
+    });
+}
+
+// Insérez le graphique avant la balise <h1>
+const h1Element = document.querySelector('h1');
+h1Element.insertAdjacentElement('beforebegin', canvas3);
+
+// Appelez la fonction pour la première fois
+updateChart();
+
